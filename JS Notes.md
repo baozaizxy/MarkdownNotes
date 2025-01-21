@@ -403,3 +403,10 @@ console.log(strObj.length);  // 输出 5
 ![截屏2025-01-10 下午10.34.19](/Users/sherryzheng_mac/Library/Application Support/typora-user-images/截屏2025-01-10 下午10.34.19.png)
 
  
+
+JS基本数据类型
+
+```js
+boolean number string null undefined symbol BigInt
+```
+
