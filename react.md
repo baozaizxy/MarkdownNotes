@@ -444,3 +444,67 @@ React.createElement(
 );
 ```
 
+
+
+**react严格模式**
+
+- **检查不安全的生命周期方法**：会标记那些已被废弃的生命周期方法（如 componentWillMount）。
+
+- **标记意外的副作用**：比如在渲染阶段产生的副作用（如直接修改 DOM）。
+
+- **检测过时的 API**：如字符串 ref（推荐使用 useRef 或回调形式的 ref）。
+
+- **双调用 render 方法**（仅开发模式）：在组件初始化时调用两次 render 方法，确保组件没有副作用。
+
+
+
+##### custom hooks
+
+自定义 Hook 不是 React 内置的功能，它只是一个开发者约定的模式，用于复用组件逻辑
+
+这个 useCustomHook 和普通的函数唯一的约定是：名字以 use 开头，并且在内部调用了其他 React Hook（如 useState、useEffect）。
+
+调用不能放在if语句，不能放在for/while中
+
+```react
+// ❌ 错误：在条件语句中调用
+function MyComponent() {
+  if (true) {
+    const [count, setCount] = React.useState(0); // Error
+  }
+}
+```
+
+
+
+##### react ecosystem
+
+
+
+error_boundary
+
+只能用class component
+
+they are not recommended and they are not deprecated. 
+
+
+
+React 自动代理了大多数事件，但某些特殊情况需要手动绑定
+
+- 监听 document 或 window 级别的事件（如 keydown、scroll）。
+
+- React 版本不支持的特殊事件（如 onPointerEnter）。
+
+
+
+事件代理(event delegation)
+
+
+
+##### useReducer
+
+##### useCallback
+
+##### useMemo
+
+##### useLayoutEffect

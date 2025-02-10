@@ -1,5 +1,3 @@
-
-
 ### JS Notes
 
 Map 返回新数组，不改变原数组
@@ -409,4 +407,150 @@ JS基本数据类型
 ```js
 boolean number string null undefined symbol BigInt
 ```
+
+
+
+##### 执行机制
+
+包括编译阶段和执行阶段
+
+- 词法分析:JS引擎将源代码解析为标记（token），即最小语法单元
+
+  const（关键字）x（标识符）=（运算符）10（数值字面量）;（分号）
+
+  ```js
+  const x = 10;
+  ```
+
+- **语法分析器（Parser）** 会根据 **Token 序列** 生成 **抽象语法树AST（Abstract Syntax Tree）** 。若代码错误，抛出 SyntaxError
+
+  - AST用处：
+
+    Babel代码转换Transformation
+
+    ESLint通过 AST 分析代码，找出错误或不符合规范的代码
+
+    Prettier等格式化工具会基于 AST 重新排版代码
+
+- 作用域分析:确定每个变量的作用域，并创建相应的词法环境（Lexical Environment）。在此阶段，所有的 `var` 和 `function` 声明会被提升到其所在作用域的顶部（即所谓的“变量提升”）。 注释：### 词法环境的组成部分
+
+
+
+##### 作用域类型：
+
+- **全局作用域**：在整个程序范围内都可访问的变量。
+- **函数作用域**：仅在函数内部可见的变量。
+- **块级作用域**：使用 `let` 和 `const` 声明的变量具有块级作用域，仅在 `{}` 内部可见。
+
+
+
+变量存储在内存中，具体来说是存储在栈（Stack）和堆（Heap）中。
+
+- **栈**：用于存储基本数据类型的值，如数字、字符串、布尔值等。
+- **堆**：用于存储引用数据类型的值，如对象、数组等。
+
+
+
+**LHS（Left-Hand Side）查找**和**RHS（Right-Hand Side）查找**。
+
+LHS 查找是指在赋值操作中找到一个目标位置来存储某个值。它发生在等号左边的变量上。
+
+```js
+a = 2; // LHS 查找 'a'
+```
+
+RHS 查找是指在需要获取某个变量或表达式的值来进行计算或其他操作时进行的查找。它发生在等号右边的变量或表达式上。
+
+```js
+console.log(a); // RHS 查找 'a'
+```
+
+
+
+##### JavaScript 模块规范对比：CommonJS、AMD、ES Modules
+
+JavaScript 的模块化规范主要经历了 **CommonJS、AMD（Asynchronous Module Definition）** 和 **ES Modules（ESM）** 三个重要阶段。它们主要用于 **管理 JavaScript 代码的模块化、依赖管理和加载方式**。
+
+
+
+**CommonJS(CJS)** ： **Node.js** 采用的模块化规范，主要特点是 **同步加载**，适用于 **服务器端**，因为服务器端代码运行在本地，无需异步请求
+
+所有代码执行时，模块已经加载完毕，无法做到动态按需加载
+
+**不适用于前端**（浏览器不支持 require()，需要打包工具如 Webpack 转换）
+
+```js
+// math.js
+const add = (a, b) => a + b;
+const subtract = (a, b) => a - b;
+
+// 使用 module.exports 导出
+module.exports = { add, subtract };
+
+// app.js
+const math = require('./math');  // 同步导入
+console.log(math.add(2, 3));  // 输出：5
+```
+
+
+
+
+
+**AMD（Asynchronous Module Definition）** ：**RequireJS** 采用的模块化规范，主要用于 **前端**，支持 **异步加载模块**，适合浏览器环境。
+
+能够异步加载、按需加载，适合前端。但语法复杂，可读性差。
+
+```js
+// math.js 定义模块
+define([], function() {
+    return {
+        add: (a, b) => a + b,
+        subtract: (a, b) => a - b
+    };
+});
+
+// app.js  使用模块
+require(['math'], function(math) {
+    console.log(math.add(2, 3));  // 输出：5
+});
+```
+
+
+
+
+
+**ES Modules（ESM）** 是 **ECMAScript 2015（ES6）** 引入的官方模块化方案，适用于 **现代 JavaScript 运行环境（浏览器 & Node.js）**。
+
+```js
+// math.js
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
+
+// 默认导出
+export default function multiply(a, b) {
+    return a * b;
+}
+
+// app.js 导入
+import { add, subtract } from './math.js';
+import multiply from './math.js';
+
+console.log(add(2, 3));  // 输出：5
+console.log(multiply(2, 3));  // 输出：6
+
+// 动态导入 按需加载
+import('./math.js').then(math => {
+    console.log(math.add(2, 3));  // 输出：5
+});
+```
+
+
+
+| 规范         | 适用环境             | 语法                           | 加载方式                   | 主要特点                      |
+| ------------ | -------------------- | ------------------------------ | -------------------------- | ----------------------------- |
+| **CommonJS** | Node.js              | `require()` / `module.exports` | **同步加载**               | 适用于服务器端，缓存模块      |
+| **AMD**      | 浏览器（RequireJS）  | `define()` / `require()`       | **异步加载**               | 适用于前端，按需加载          |
+| **ESM**      | 现代浏览器 & Node.js | `import` / `export`            | **静态解析**，支持动态导入 | 官方标准，支持 `tree shaking` |
+
+
 

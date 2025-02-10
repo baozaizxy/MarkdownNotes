@@ -2,8 +2,6 @@
 
 - REACT
 
-- 箭头函数
-
 - 闭包
 
 - diff算法
@@ -38,10 +36,6 @@
   | **生态系统**          | 成熟且丰富                    | 生态逐渐完善               |
   | **适用场景**          | 大型复杂项目                  | 现代前端框架开发           |
 
-- 自动化构建 -- JS->BABEL CS->POSTCSS
-
-- 性能优化手段，如代码分割、资源压缩。**Tree-shaking**
-
 - 大图片加载怎么实现
 
 - CI/CD 流程，自动化测试/部署
@@ -54,13 +48,13 @@
 
   ​	•	配置持续集成和部署流程。
 
-  ​	•	**Vercel/Netlify**:
+  ​	•	**Vercel/Netlify/AWS**:
 
   ​	•	零配置的前端托管服务，适合快速部署项目。
 
 - 懒加载
 
-- ssr改造
+- ssr改造。
 
 - Service worker
 
@@ -68,19 +62,13 @@
 
 - React-DND 拖拽
 
-- npm包管理器(https://blog.csdn.net/qq_25502269/article/details/79346545)
-
 -  媒体查询和响应式设计
 
 - **热模块更新（HMR）**
 
 - UMD
 
-- 浏览器原理
-
 - 设计模式
-
-- 脚手架 
 
 - AWS/API/CICD
 
@@ -91,3 +79,11 @@
 - CommonJS && ECMAScript
 
 - Express.js && koa.js
+
+- react虚拟dom，diff算法
+
+- 做一些token相关的
+
+- HMR热更新
+
+- 跨域问题
