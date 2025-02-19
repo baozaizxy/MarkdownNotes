@@ -166,3 +166,4 @@ TDD: test-driven-development
 
 Interpolation 插值
 
+哑结点`dummyHead`
