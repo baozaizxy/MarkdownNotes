@@ -153,11 +153,59 @@ offsetWidth**、**offsetHeight **获取元素的可见尺寸**，clientWidth**�
 
 
 
-节流throttle && 防抖 debounce
+##### 节流throttle && 防抖 debounce
 
 ![](./aeeets/throttle and debounce.webp)
 
+```js
+// 防抖
+export function debounce(fn, delay = 300, immediate = false) {
+  let timer = null;
 
+  return function (...args) {
+    const context = this;
+    if (immediate && !timer) {
+      fn.apply(context, args); // 立即执行
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(context, args);
+    }, delay);
+  };
+}
+```
+
+```js
+// 节流
+export function throttle(fn, delay = 300, leading = true, trailing = true) {
+  let lastCall = 0;
+  let timer = null;
+
+  return function (...args) {
+    const context = this;
+    const now = Date.now();
+
+    if (!lastCall && !leading) lastCall = now;
+
+    const remainingTime = delay - (now - lastCall);
+
+    if (remainingTime <= 0) {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      lastCall = now;
+      fn.apply(context, args);
+    } else if (!timer && trailing) {
+      timer = setTimeout(() => {
+        lastCall = leading ? Date.now() : 0;
+        timer = null;
+        fn.apply(context, args);
+      }, remainingTime);
+    }
+  };
+}
+```
 
 **微前端（Micro Frontends）&&  微服务（Microservices）** 
 
@@ -418,4 +466,74 @@ Vue CLI 是 Vue.js 官方提供的命令行工具，用于生成完整的项目�
 ##### Next.js
 
 Next.js 是一个React框架，它不仅仅是一个简单的脚手架工具，而是提供了完整的解决方案，包括服务器端渲染（SSR）、静态站点生成（SSG）、API路由等功能。Next.js 的特点是易于上手且功能强大，适合构建从简单博客到复杂电子商务平台等各种类型的Web应用。
+
+
+
+### 用户鉴权机制原理
+
+#### session-cookie
+
+Session就是一个信息，并且有一个唯一标识，来识别身份
+
+将服务器保存信息，生成一个唯一标识，然后下发给客户端，保存在cookie中，这样每次客户端就能使用这个唯一标识去判断用户的一些状态以及登录信息，这就是session-cookie的原理。
+
+#### hash算法
+
+Hash（哈希）算法 是一种将 任意长度输入映射为固定长度输出 的函数，广泛应用于 数据加密、数字签名、数据完整性校验、数据库索引、密码存储 等场景。
+
+#### token
+
+一个 JWT token 是一个字符串，它由三部分组成，令牌头、载荷（payload）与签名（Signature）
+
+
+
+### Web Worker 性能优化
+
+**Web Worker** 是 HTML5 提供的一种 API，允许在 **主线程（Main Thread）之外** 创建**独立的 JavaScript 线程**，用于执行 **耗时操作（如计算、数据处理、文件解析）**，从而避免主线程阻塞，提高 Web 应用的性能和响应速度。
+
+- 与主线程并行运行，不会阻塞 UI 渲染。
+- 通过 postMessage 和 onmessage 进行数据传递。
+- 不能直接操作 DOM，也无法访问 window、document 等对象。
+- 适用于大数据计算、文件解析、复杂循环运算等。
+
+当主线程使用`worker.postMessage`发送消息时，工作线程中的`message`事件处理函数就会被触发。当工作线程使用`worker.postMessage`发送消息时，主线程中的`message`事件处理函数就会被触发。所以就是用来通信的。
+
+postMessage是一种**异步通信**
+
+**主线程**
+
+```javascript
+    function startCalculation() {
+      // 创建一个Web Worker对象，指定worker.js作为工作线程的脚本
+      const worker = new Worker('worker.js');
+      worker.postMessage(10000000); // 发送数据给 Worker
+
+      worker.onmessage = function (event) {
+        console.log("计算结果:", event.data); // 接收 Worker 计算后的结果
+      };
+
+      // 主线程关闭 Worker 的方法（可选）
+      worker.terminate();
+    }
+```
+
+**工作线程**
+
+```js
+// worker.js
+// self是对工作线程自身全局对象的引用。类似于浏览器主线程中的window对象，要注意的self不能访问 DOM 相关内容
+self.onmessage = function (event) {
+  const num = event.data;
+  let result = 0;
+  for (let i = 0; i < num; i++) {
+    result += i;
+  }
+  // 将结果发送回主线程
+  self.postMessage(result);
+  // 工作线程关闭worker的方法
+  self.colse();
+};
+```
+
+
 

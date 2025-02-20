@@ -8,8 +8,6 @@
 
 - 生命周期（旧版新版的变化是为了限制副作用，递归过程变成了循环过程，异步渲染可打断）
 
-- RN
-
 - 工程化的内容 -- webpack/vite/parcel/rollup
 
   Webpack: 
@@ -88,4 +86,4 @@
 
 - 跨域问题
 
-- 字节青训营
+- ### NEXT.JS的Data Handling & Deployment
