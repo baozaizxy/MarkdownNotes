@@ -537,3 +537,74 @@ self.onmessage = function (event) {
 
 
 
+### 如何发布npm包
+
+1. 准备好package.json，如果没有，可以使用npm init来生成（需要提供包的名称、版本号、描述、入口文件等）
+2. 功能性测试以及确保npm无重名包
+3. 登陆npm账号
+4. npm publish发布
+
+
+
+### 多域名跨域携带什么请求头
+
+- origin 请求头用于标识跨域请求的来源，即发送请求的页面所在的域名
+
+  ```tex
+  Origin: https://example.com
+  ```
+
+-  Access-Control-Request-Method 请求头:当浏览器发起预检请求（OPTIONS 请求）时，会附带此请求头，表示实际请求的方法。
+
+  ```text
+  Access-Control-Request-Method: POST
+  ```
+
+- Access-Control-Request-Headers 请求头: 跨域请求如果使用了非简单请求头（如自定义请求头），会自动发送此请求头。它用于告知服务器，实际请求中会带哪些自定义的请求头。
+
+  ```text
+  Access-Control-Request-Headers: X-Custom-Header, Content-Type
+  ```
+
+- Authorization 
+
+  ```text
+  Authorization: Bearer <token>
+  ```
+
+- 凭证（Cookies、HTTP认证等）
+
+  ```js
+  fetch(url, {
+    method: 'GET',
+    credentials: 'include'  // 允许跨域请求携带凭证（cookies等）
+  });
+  ```
+
+
+
+### CDN的边缘策略
+
+CDN（内容分发网络）边缘策略是指通过优化 CDN 的边缘服务器（即接近用户的服务器）来提高内容的交付效率、性能和用户体验的各种技术和配置。
+
+1. 缓存策略：决定了哪些内容应该被缓存，以及缓存内容的生命周期。
+   缓存时间TTL time to live
+
+   ```text
+   Cache-Control: max-age=3600  // 设置缓存时长为 1 小时
+   ```
+
+   如果源服务器上的内容发生更改，需要确保边缘节点的缓存能够及时更新。可以通过设置 Cache-Control: no-cache 或使用手动刷新请求来触发缓存更新。
+
+2. 负载均衡
+
+   - **地理位置负载均衡**：根据用户的地理位置选择距离最近的服务器。
+   - **响应时间负载均衡**：选择响应时间最快的边缘服务器。
+   - **流量负载均衡**：根据每个服务器的负载情况（如 CPU 使用率、内存消耗）分配请求。
+
+3. 内容预加载和预取
+
+4. 边缘计算
+   边缘计算能力可以让复杂的计算和逻辑处理发生在离用户更近的地方，从而提高响应速度和用户体验
+   在边缘服务器上执行一些计算任务，如实时分析、身份验证、A/B 测试等，减少了请求到达源服务器的次数。
+
