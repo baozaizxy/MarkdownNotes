@@ -215,3 +215,37 @@ Trie（前缀树，也称字典树）是一种树形数据结构，主要用于�
 
 在递归到某一“叶子节点”（非最后一个叶子）时，答案需要向上返回，而此时还有其他的子树（与前述节点不在同一子树）未被递归到，又由于path为全局变量。若直接返回，会将本不属于该子树的答案带上去，故需要恢复现场。 恢复现场的方式为：在递归完成后 dfs(i+1); 后，进行与“当前操作”相反的操作，“反当前操作”
 
+
+
+#### 二分查找
+
+```js
+// 闭合区间 不断减半 时间复杂O(log n)
+while(left <= right){
+  mid = Math.floor(left+right);
+  // if mid < target
+  left = mid + 1;
+  // if mid > target
+  right = mid - 1;
+}
+return left;
+right = ground(nums, target + 1) -1;
+
+```
+
+```js
+var searchInsert = function(nums, target) {
+    let left = -1,
+        right = nums.length;
+    while(left + 1 < right){
+        let mid = Math.floor((left+right)/2);
+        if(nums[mid] >= target){
+            right = mid;
+        } else {
+            left = mid;
+        }
+    }
+    return right;
+};
+```
+
