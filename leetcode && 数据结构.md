@@ -249,3 +249,10 @@ var searchInsert = function(nums, target) {
 };
 ```
 
+
+
+堆的本质就是二叉树
+
+大顶堆：根节点是最大的元素
+
+小顶堆：根节点是最小的元素
