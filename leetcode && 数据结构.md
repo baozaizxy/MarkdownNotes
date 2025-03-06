@@ -256,3 +256,26 @@ var searchInsert = function(nums, target) {
 大顶堆：根节点是最大的元素
 
 小顶堆：根节点是最小的元素
+
+
+
+动态规划dynamic programming
+
+**背包 DP**
+
+例如：**0-1 背包问题**、**完全背包**。
+
+**状态表示**：dp[i][j] 表示前 i 个物品，在总容量 j 下的最大价值。
+
+**状态转移方程（0-1 背包）**：
+$$
+f(i, w) =
+\begin{cases} 
+0, & i = 0 \text{ or } w = 0 \\
+f(i-1, w), & w_i > w \\
+\max(f(i-1, w), f(i-1, w - w_i) + v_i), & w_i \leq w
+\end{cases}
+$$
+
+
+二叉树递归 -> 回溯 -> 记忆化搜索 -> 递推

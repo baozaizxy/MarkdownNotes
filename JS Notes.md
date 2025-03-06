@@ -4,6 +4,8 @@ Map 返回新数组，不改变原数组
 
 forEach 返回改变后的原数组
 
+- `map`方法会生成一个新的数组，并将每次遍历的返回值按顺序放入新数组中。而`forEach`方法没有返回值，仅用于遍历数组。
+
 Date-formate---->string
 
 Date.parse() lead to milliseconds
@@ -554,3 +556,193 @@ import('./math.js').then(math => {
 
 
 
+#### JS延迟加载的方式
+
+延迟加载（Deferred Loading）是一种优化网页性能的技术，可以延迟加载页面中的资源（如脚本、样式表、图片等），从而加快页面的初始加载速度。
+
+1. **懒加载图片（Lazy Loading Images）**
+
+   ```html
+   <img src="image.jpg" loading="lazy" alt="description">
+   ```
+
+2.  **懒加载脚本（Lazy Loading Scripts）**
+
+   **使用 async 和 defer 属性**：
+
+   - async：脚本异步加载，不会阻塞页面渲染。
+
+   - defer：脚本延迟执行，直到页面解析完毕后执行脚本。
+
+   ```html
+   <script src="script.js" async></script>
+   <script src="script.js" defer></script>
+   ```
+
+3. **动态插入脚本**：
+
+   ```js
+   const loadScript = (src) => {
+     const script = document.createElement('script');
+     script.src = src;
+     script.async = true;  // 或者 script.defer = true;
+     document.head.appendChild(script);
+   };
+   
+   // 在需要时加载脚本
+   loadScript('script.js');
+   ```
+
+4. 懒加载组件
+
+   ```react
+   import React, { Suspense, lazy } from 'react';
+   
+   // 懒加载组件
+   const LazyComponent = lazy(() => import('./LazyComponent'));
+   
+   function App() {
+     return (
+       <div>
+         <Suspense fallback={<div>Loading...</div>}>
+           <LazyComponent />
+         </Suspense>
+       </div>
+     );
+   }
+   ```
+
+   
+
+#### 严格模式的限制
+
+1. 变量声明必须显式
+2. 全局对象的this不会指向window而是undefined
+3. **对象不能定义重复的属性名**
+4. **不可删除 configurable: false 的属性**
+
+
+
+#### 使用JS判断一个数组
+
+1.  **Array.isArray()**
+
+2. ```js
+   console.log([1, 2, 3] instanceof Array); // true
+   console.log("hello" instanceof Array);   // false
+   console.log({} instanceof Array);        // false
+   ```
+
+3. **Object.prototype.toString.call()**
+
+   ```js
+   console.log(Object.prototype.toString.call([1, 2, 3])); // "[object Array]"
+   console.log(Object.prototype.toString.call("hello"));   // "[object String]"
+   console.log(Object.prototype.toString.call({}));        // "[object Object]"
+   ```
+
+4. **constructor 属性**
+
+   ```js
+   console.log([1, 2, 3].constructor === Array); // true
+   console.log("hello".constructor === Array);   // false
+   console.log({}.constructor === Array);        // false
+   ```
+
+   
+
+#### 遍历对象的方法
+
+1.  **for...in**，**会遍历原型链上的属性**，需要使用 hasOwnProperty() 过滤：
+
+   ```js
+   for (let key in obj) {
+       if (obj.hasOwnProperty(key)) {
+           console.log(key, obj[key]);
+       }
+   }
+   ```
+
+2. **Object.keys()**
+
+   只返回对象自身的属性（不包括原型链上的）。
+
+   可与 forEach()、map() 等数组方法配合使用。
+
+   仅返回**可枚举**的属性，无法获取不可枚举的属性。
+
+   ```js
+   const obj = { a: 1, b: 2, c: 3 };
+   
+   Object.keys(obj).forEach(key => {
+       console.log(key, obj[key]);
+   });
+   // 输出:
+   // a 1
+   // b 2
+   // c 3
+   ```
+
+3. **Object.values()**
+   Object.values() 返回对象所有可枚举属性的值，适用于仅需要属性值的情况。
+
+4. **Object.entries()**
+   Object.entries() 返回对象的**可枚举属性**键值对数组。
+
+   ```js
+   const obj = { a: 1, b: 2, c: 3 };
+   
+   Object.entries(obj).forEach(([key, value]) => {
+       console.log(key, value);
+   });
+   // 输出:
+   // a 1
+   // b 2
+   // c 3
+   ```
+
+
+
+#### JavaScript 大数相加 
+
+在 JavaScript 中，由于 Number 类型的安全整数范围限制（Number.MAX_SAFE_INTEGER 约为 2^53 - 1），直接对大整数相加可能会导致精度丢失。
+
+因此，可以使用 **字符串模拟** 大整数相加，或者使用 **BigInt** 类型。
+
+BigInt 能够处理任意长度的整数运算，不会有精度丢失的问题。
+
+字符串
+
+```js
+function addBigNumbers(a, b) {
+  let res = '';
+  let carry = 0;
+  let i = a.length - 1;
+  let j = b.length - 1;
+
+  while (i >= 0 || j >= 0 || carry) {
+    const x = i >= 0 ? Number(a[i]) : 0;
+    const y = j >= 0 ? Number(b[j]) : 0;
+    const sum = x + y + carry;
+    
+    res = (sum % 10) + res; // 取个位数
+    carry = Math.floor(sum / 10); // 进位
+    
+    i--;
+    j--;
+  }
+
+  return res;
+}
+
+console.log(addBigNumbers("12345678901234567890", "98765432109876543210"));
+// 输出: "111111111011111111100"
+```
+
+
+
+#### 拖拽的监控
+
+1. Event.clientX,Y表示**鼠标指针相对于浏览器可视窗口（viewport）的** **左上角**
+2. offsetLeft 表示**当前元素相对于其最近的** offsetParent（一般是 position 不是 static 的父元素）的 **左侧偏移量**。
+3. 给mousedown,mousemove及mouseup事件绑定事件
