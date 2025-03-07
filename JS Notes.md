@@ -746,3 +746,81 @@ console.log(addBigNumbers("12345678901234567890", "98765432109876543210"));
 1. Event.clientX,Y表示**鼠标指针相对于浏览器可视窗口（viewport）的** **左上角**
 2. offsetLeft 表示**当前元素相对于其最近的** offsetParent（一般是 position 不是 static 的父元素）的 **左侧偏移量**。
 3. 给mousedown,mousemove及mouseup事件绑定事件
+
+
+
+#### 创造类的方法
+
+1.  **使用 class（ES6 标准）**
+
+   ```js
+   class Person {
+     constructor(name) {
+       this.name = name;
+     }
+   
+     sayHello() {
+       console.log(`Hello, my name is ${this.name}`);
+     }
+   }
+   
+   const p = new Person("Alice");
+   p.sayHello(); // Hello, my name is Alice
+   ```
+
+   ​	•	**ES6 语法**，更清晰、面向对象的写法。
+
+   ​	•	**支持继承**（extends 关键字）。
+
+   ​	•	**语法糖**，本质上是 function + prototype 的封装。
+
+2. **使用 function 构造函数（ES5 及更早）**
+
+   ```js
+   function Person(name) {
+     this.name = name;
+   }
+   
+   Person.prototype.sayHello = function() {
+     console.log(`Hello, my name is ${this.name}`);
+   };
+   
+   const p = new Person("Bob");
+   p.sayHello(); // Hello, my name is Bob
+   ```
+
+   ​	•	传统的 **构造函数 + 原型** 方法，等效于 class。
+
+   ​	•	new 关键字创建实例，方法定义在 prototype 上。
+
+3. **使用 Object.create()**
+
+   ```js
+   const personProto = {
+     sayHello() {
+       console.log(`Hello, my name is ${this.name}`);
+     }
+   };
+   
+   const p = Object.create(personProto);
+   p.name = "Charlie";
+   p.sayHello(); // Hello, my name is Charlie
+   ```
+
+4. **使用工厂函数（Factory Function）**
+
+   ```js
+   function createPerson(name) {
+     return {
+       name,
+       sayHello() {
+         console.log(`Hello, my name is ${this.name}`);
+       }
+     };
+   }
+   
+   const p = createPerson("David");
+   p.sayHello(); // Hello, my name is David
+   ```
+
+   **避免使用 this**，适合**函数式编程**。
