@@ -704,6 +704,10 @@ const [isPending, startTransition] = useTransition();
 
 
 
+##### useDeferredValue
+
+
+
 ##### useContext
 
 `useContext` 是一个 React Hook，可以让你读取和订阅组件中的context。
@@ -772,7 +776,7 @@ function ChildComponent() {
 
 在旧版 React 中，协调（reconciliation）和渲染过程是同步执行的。**当应用需要进行大量更新时（需要耗费大量计算和渲染时间），React 会阻塞 UI，直到所有更新完成**，导致应用在长时间更新时会变得不响应。Fiber 解决了这个问题，通过异步执行更新操作来分解工作
 
-RequestIdeCallback
+RequestIdeCallback messageChannel
 
 浏览器的主线程分为JS和渲染
 
@@ -788,7 +792,7 @@ React 的渲染过程通常遵循 **自顶向下的执行顺序**。这意味着
 
 #### React Fiber特性
 
-1. **分段执行和时间切片（Time Slicing）**：渲染任务被切分成多个小的任务块（称为 Fiber），每次处理一个小部分的任务，然后暂停，在下一个渲染周期继续执行。这意味着即使渲染过程需要耗费大量时间，也不会阻塞主线程，用户仍然可以进行交互。
+1. **分段执行和时间切片（Time Slicing）**：渲染任务被切分成多个小的任务块（称为 Fiber），**每次处理一个小部分的任务，然后暂停**，在下一个渲染周期继续执行。这意味着即使渲染过程需要耗费大量时间，也不会阻塞主线程，用户仍然可以进行交互。
 2. **优先级调度（Priority Scheduling）**：React 可以根据任务的重要性和紧急性调整渲染顺序。高优先级任务（如用户交互、动画等）会优先执行，而低优先级任务（如网络请求或非关键 UI 更新）可以延迟执行。
 3. **异步渲染（Async Rendering）**：React 可以在处理更新时暂停和恢复渲染，在渲染过程中，React 会检测是否有需要优先响应的任务，如用户输入，滚动等，如果有，这些任务会被立即执行，保证用户体验。
 

@@ -51,8 +51,168 @@ js是单线程的语言，且没有异步的特性。那么，在一些复杂的
 
 V8采用了一种代回收的策略，将内存分为两个生代：**新生代（new generation）**和**老生代（old generation）**。
 
+几次清除后仍在的被分到OG,OG区域满了再清除不可达对象
+
 
 
 ### 浏览器缓存机制
 
-https://www.jianshu.com/p/54cc04190252
+- cookie: 通常用于存储用户身份，登录状态等
+
+  - `http` 中自动携带， 体积上限为 `4K`， 可自行设置过期时间
+
+- `localStorage / sessionStorage`: 长久储存/窗口关闭删除， 体积限制为 `4~5M`
+
+- `indexDB`
+
+  一种在浏览器端存储大量结构化数据的方式，它是一个低级别的 API，用于在浏览器中存储键值对数据，并支持对这些数据的高级查询。与传统的 localStorage 和 sessionStorage 相比，IndexedDB 具有更强大的存储能力，尤其适合存储大量数据、复杂的数据结构（如对象），并支持事务和索引等高级功能。
+
+#### indexDB
+
+运行在浏览器的非关系型数据库 
+
+- **持久性**：数据保存在用户的浏览器中，即使浏览器关闭后，数据也不会丢失。
+
+- **性能**：相比于传统的本地存储，IndexedDB 允许你存储更大量的数据，并且支持高效的查询操作。
+
+- **复杂数据类型**：它不仅可以存储字符串和数字，还支持存储对象、数组等复杂数据结构。
+
+- **异步操作**：数据存取是异步的，这样不会阻塞网页的其他操作，提高了页面的响应速度。
+
+
+
+每 16.6 毫秒，浏览器会尝试完成一个 **渲染周期**。这个过程包括了以下几个重要的任务
+
+1. **事件循环（Event Loop）**
+
+​	执行 JavaScript 代码
+
+​	执行由用户交互触发的事件处理程序（例如点击、滚动）
+
+​	执行异步操作的回调函数（例如定时器回调、请求回调等）
+
+2. **重绘（Repaint）**
+
+3.  **回流（Reflow）**
+
+4. **合成（Compositing）**
+
+5. **GPU 合成和渲染**
+
+   在更复杂的渲染操作中，浏览器可能会使用 GPU（图形处理单元）来加速渲染过程。GPU 可以将页面的不同层进行合成和渲染，从而减少主线程的负担。
+
+
+
+### 浏览器内核
+
+浏览器引擎分为JS引擎和渲染引擎
+
+#### JS引擎 - V8
+
+**功能**：负责解析、编译、执行 JavaScript 代码
+
+**作用范围**：只处理 JavaScript，不负责页面渲染
+
+**主要使用者**：Chrome、Edge、Node.js等
+
+**工作原理**：解析 JS → 编译为机器码 → 执行
+
+**引擎特点**：使用 Just-In-Time（JIT）编译，提升执行速度- 支持 WebAssembly、垃圾回收优化
+
+
+
+#### 渲染引擎 - Blink/WebKit
+
+**功能**：负责解析 HTML、CSS 并渲染页面
+
+**作用范围**：处理 HTML、CSS、JavaScript（但通常会调用 JavaScript 引擎）
+
+**主要使用者**： **Blink（Chrome、Edge、Opera）**  **WebKit**：Safari
+
+**工作原理**：解析 HTML/CSS → 计算布局 → 绘制页面
+
+**引擎特点**：负责页面解析和渲染- 早期 Chrome 使用 WebKit，后被 Blink 取代
+
+
+
+###  **输入 URL 后发生了什么？**
+
+1. **检查缓存**
+
+   先检查本地缓存（HTTP 缓存，如 Service Worker、Memory Cache、Disk Cache）。
+
+2. **DNS 解析**
+
+3. **建立 TCP 连接**
+
+4. **发送 HTTP 请求**
+
+5. **服务器响应**
+
+
+
+### 浏览器工作流程
+
+浏览器 **渲染引擎** 开始处理 HTML，构建 **DOM 树**
+
+1. **按流式解析 HTML（Streaming Parsing）**：
+   - 遇到 HTML 标签就创建对应的 DOM 节点，形成 **DOM 树**。
+   - 如果遇到 **外部 JS 文件**（<script src="xx.js">），默认会**阻塞解析**，等 JS 加载并执行后再继续解析 HTML（除非加上 async 或 defer）。
+
+2. **遇到 CSS 文件**：
+   - 解析 CSS 规则，构建 **CSSOM（CSS Object Model）**。
+   - **CSSOM 解析会阻塞渲染**，因为渲染引擎需要等 CSS 加载完再进行渲染。
+3. **解析 CSS，计算样式（用渲染引擎）**
+4. **布局（Layout / Reflow，用渲染引擎）**
+5. **绘制（Painting，用渲染引擎）**
+6. **执行 JavaScript（用 JavaScript 引擎）**
+
+#### **执行 JavaScript（用 JavaScript 引擎）**
+
+**当浏览器在解析 HTML 时遇到 <script> 标签**，**JavaScript 引擎会暂停 HTML 解析并开始执行 JavaScript 代码**。
+
+浏览器的 **主线程** 负责：
+
+- 解析 HTML
+
+- 执行 JS（JS 引擎）
+
+- 计算 CSS、布局、绘制（渲染引擎）
+
+由于 JS 引擎和渲染引擎共享主线程，它们必须**排队**执行，不能同时运行。
+
+##### **如何优化 JS 和渲染引擎的交互？**
+
+1. **让 JS 异步执行，避免阻塞 HTML 解析**
+
+   ```html
+   <script src="script.js" async></script>
+   <script src="script.js" defer></script>
+   ```
+
+   async 让 JS 文件**异步加载**，但一旦加载完成，就会立即执行，仍可能影响渲染。
+
+   ​	async 脚本的执行顺序 **不一定与它们在 HTML 中出现的顺序一致**。如果有多个 async 脚本，它们会按照加载完成的顺序执行，而不是按照它们在 HTML 中的顺序执行。
+
+   defer **推荐**：等 HTML 解析完再执行 JS，不会阻塞渲染
+
+   ​	与 async 不同，defer 脚本会按照它们在 HTML 文件中出现的顺序执行，即使它们的加载顺序不同。
+
+2. **使用 Web Worker 让 JS 运行在后台**
+
+   ```js
+   const worker = new Worker("worker.js");
+   worker.postMessage("Hello Worker!");
+   ```
+
+   **但 Web Worker 不能访问 DOM，只能用于计算密集型任务。**
+
+
+
+#### 事件循环
+
+浏览器的事件循环（Event Loop）是 JavaScript 运行时机制的核心部分，它使得 JavaScript 能够在单线程的环境中异步处理任务，而不会阻塞主线程。
+
+- **事件循环** 是 JavaScript 执行的核心，它使得 JavaScript 在单线程中能够处理异步任务。
+- 事件循环首先执行同步代码，然后处理任务队列中的宏任务。
+- 每次执行完宏任务后，事件循环会立即执行微任务。
