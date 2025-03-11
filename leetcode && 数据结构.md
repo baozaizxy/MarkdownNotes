@@ -157,9 +157,54 @@ const twoSum = function (nums, target) {
 中序遍历；出栈顺序：左-根-右；入栈顺序：右-根-左；
 后序遍历；出栈顺序：左-右-根；入栈顺序：根-右-左；
 
-- 广度优先遍历（BFS）
+**二叉树的中序遍历**
+
+```js
+var inorderTraversal = function(root) {
+    const res = [];
+    const stack = [];
+    while(root || stack.length){
+        while(root){
+            stack.push(root);
+            root = root.left;
+        }
+        root = stack.pop();
+        res.push(root.val);
+        root = root.right;
+    }
+    return res;
+};
+```
 
 
+
+- **广度优先遍历（BFS）**
+
+```js
+var levelOrder = function(root) {
+    if(!root){
+        return [];
+    }
+    let res = [];
+    let queue = [root];
+    while(queue.length){
+        let levelSize = queue.length;
+        res.push([]);
+        while(levelSize){
+            const node = queue.shift();
+            res[res.length - 1].push(node.val);
+            if(node.left){
+                queue.push(node.left);
+            }
+            if(node.right){
+                queue.push(node.right);
+            }
+            levelSize--;
+        }
+    }
+    return res;
+};
+```
 
 
 
