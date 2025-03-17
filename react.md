@@ -1124,13 +1124,47 @@ useEffect(() => {
 
    
 
+### 组件
 
+#### Fragment
 
-### React Router
+`<Fragment>` 通常使用 `<>...</>` 代替，它们都允许你在不添加额外节点的情况下将子元素组合。
 
+#### Profiler
 
+`<Profiler>` 允许你编程式测量 React 树的渲染性能。
 
+```jsx
+<Profiler id="App" onRender={onRender}>
+  <App />
+</Profiler>
+```
 
+```js
+function onRenderCallback(
+  id: string,            // 组件 ID（即 Profiler 的 `id` 属性）
+  phase: "mount" | "update", // "mount"（初次渲染）或 "update"（重新渲染）
+  actualDuration: number,  // 本次更新的实际渲染时间（单位：ms）
+  baseDuration: number,    // 该组件理论上的最小渲染时间（无优化时）
+  startTime: number,       // 开始渲染的时间戳（相对于 React 运行时）
+  commitTime: number,      // 提交更新的时间戳
+  interactions: Set        // 触发更新的交互（通常用于 React Concurrent Mode）
+) { }
+```
+
+#### Suspense
+
+React 将展示 后备方案 直到  children  需要的所有代码和数据都加载完成。
+
+```jsx
+<Suspense fallback={<Loading />}>
+  <SomeComponent />
+</Suspense>
+```
+
+#### StrictMode
+
+自动调用两次 useEffect 和 componentDidMount,检测 useEffect 副作用是否是**幂等的**（即不会引起意外的副作用）
 
 
 
@@ -1138,13 +1172,172 @@ Redux
 
 React Router
 
-高阶组件（HOC）
-
 Render Props 模式
 
 受控组件 vs 非受控组件
 
 React 18 的并发模式（Concurrent Rendering）
+
+react中的useEffect第二个参数传空数组和不传，在渲染上有什么区别
+
+
+
+react中不是有一个key吗，比如我给这个组件声明一个key，会有什么作用。为什么要设计key这么一个关键数
+
+
+
+### 常见题
+
+#### react怎么实现代码分割和懒加载
+
+**使用 React.lazy() + Suspense**
+
+```react
+import React, { lazy, Suspense } from "react";
+
+// 懒加载组件
+const LazyComponent = lazy(() => import("./LazyComponent"));
+
+function App() {
+  return (
+    <div>
+      <h1>React 代码分割示例</h1>
+      {/* 在 React 中，Suspense 允许等待某些异步操作（如懒加载组件）完成后再进行渲染，而 fallback 组件就是在等待期间显示的内容。 */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <LazyComponent />
+      </Suspense>
+    </div>
+  );
+}
+
+export default App;
+```
+
+**结合 React Router 进行路由级别代码分割**
+
+```react
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+
+function App() {
+  return (
+    <Router>
+      <Suspense fallback={<div>页面加载中...</div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </Suspense>
+    </Router>
+  );
+}
+
+export default App;
+```
+
+
+
+#### 合成事件
+
+对 **原生 DOM 事件的封装**，它提供了**跨浏览器的兼容性**，并优化了**性能和事件管理**
+
+
+
+- **跨浏览器兼容性**：React 统一了不同浏览器的事件处理方式，避免了兼容性问题。
+- **提高性能**：React 使用**事件委托**，将事件**绑定在 document 或 root 上**，减少事件监听器的数量，提高性能，然后通过**事件冒泡**触发回调。
+- **可重用的事件池（Event Pooling）**：React **复用事件对象**，减少垃圾回收（GC）压力。
+
+##### 事件池
+
+**事件池**是一个用于复用事件对象的机制。当事件触发时，React 会使用一个池（pool）来复用事件对象，而不是为每个事件创建一个新的对象。
+
+为了优化性能，React 使用事件池来复用事件对象。这意味着每次事件触发时，React 会重用一个事件对象，而不是每次都创建一个新的实例。这样可以大大减少内存的使用。
+
+由于事件池复用对象，**你不能异步访问事件对象**。例如，如果你在事件处理函数内异步执行某些操作，事件对象可能已经被重用，导致你访问的属性为空或无效。
+
+为了能够异步访问，react提供了两种方法
+
+1. **使用事件对象的 persist 方法**
+
+   persist() 方法会阻止事件对象被回收到事件池中，这样你可以在异步操作中安全地使用该事件对象。
+
+   ```js
+   function handleClick(event) {
+     event.persist(); // 阻止事件对象被回收
+     setTimeout(() => {
+       console.log(event.target); // 现在可以安全地异步访问 event.target
+     }, 1000);
+   }
+   ```
+
+2. 手动将事件对象的关键信息（如 event.target）保存到一个普通的变量中
+
+   ```js
+   function MyComponent() {
+     const handleClick = (event) => {
+       const target = event.target; // 提取需要的属性
+   
+       // 异步操作，访问保存的 target
+       setTimeout(() => {
+         console.log("异步访问 target:", target); // 安全访问
+       }, 1000);
+     };
+   
+     return <button onClick={handleClick}>点击我</button>;
+   }
+   ```
+
+   
+
+#### 高阶组件HOC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+react只是facebook团队的一个库
+
+React 更像是一个用于构建 UI 的库，而不是完整的框架。它专注于 UI 的构建，并通过组合各种库来处理其他功能（如路由、状态管理等）。
+
+它的核心理念是通过**组件化**的方式来构建界面，并使用**虚拟 DOM**来高效更新界面。来计算出最小的变更
+
+react官方已经不再推荐继续使用react来创建项目
+
+比如angular 不需要额外的路由 不需要额外的测试框架
+
+而next.js是一个完整的package
+
+```sh
+npx create-next-app@latest my-next-app
+cd my-next-app
+npm run dev
+```
+
+1. SSR
+2. SSG: 在**构建时**预先生成 HTML，速度最快，适用于**博客、产品列表、SEO 友好页面**。
+3. Router
+4. SEO
 
 
 
