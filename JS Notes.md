@@ -578,13 +578,18 @@ import('./math.js').then(math => {
    <img src="image.jpg" loading="lazy" alt="description">
    ```
 
-2.  **懒加载脚本（Lazy Loading Scripts）**
+2. **懒加载脚本（Lazy Loading Scripts）**
 
    **使用 async 和 defer 属性**：
 
-   - async：脚本异步加载，不会阻塞页面渲染。
+   - async：脚本异步加载，不会阻塞页面渲染。执行顺序不确定，可能和文档顺序无关。
 
-   - defer：脚本延迟执行，直到页面解析完毕后执行脚本。
+     当脚本不依赖于其他脚本或 DOM 元素时。
+     适合独立的、无需顺序执行的脚本（如分析工具、广告脚本等）。
+
+   - defer：脚本延迟执行，直到页面解析完毕后执行脚本。按照顺序执行。
+
+     - 当脚本依赖于 DOM 元素时。使用defer
 
    ```html
    <script src="script.js" async></script>
@@ -631,7 +636,7 @@ import('./math.js').then(math => {
 1. 变量声明必须显式
 2. 全局对象的this不会指向window而是undefined
 3. **对象不能定义重复的属性名**
-4. **不可删除 configurable: false 的属性**
+4. **不可删除 configurable: false 的属性** ？？？
 
 
 
@@ -836,6 +841,72 @@ console.log(addBigNumbers("12345678901234567890", "98765432109876543210"));
    ```
 
    **避免使用 this**，适合**函数式编程**。
+
+
+
+#### JSON的序列化和反序列化
+
+**JSON 序列化**:
+
+- 序列化是将 JavaScript 对象转换为 JSON 字符串的过程。
+- 可以使用 `JSON.stringify()` 方法来实现序列化。
+
+**JSON 反序列化**:
+
+- 反序列化是将 JSON 字符串转换回 JavaScript 对象的过程。
+- 可以使用 `JSON.parse()` 方法来实现反序列化。
+
+JSON.parse(JSON.stringtify(obj))问题：
+
+- 序列化时,JavaScript 对象中的一些特殊值(如 `undefined`、函数等)会被忽略
+- 反序列化时,JSON 字符串中的键值对会被转换为 JavaScript 对象的属性和值。即所有的costructor都会被抛弃，原型都指向object，原型链破裂
+- 有环会抛出异常
+
+
+
+#### Object.assign()
+
+`Object.assign()` 是 ECMAScript 6 (ES6) 中引入的一个非常有用的方法,它可以用于对象的合并和拷贝。
+
+- `Object.assign()` 方法用于将一个或多个源对象的所有**可枚举属性**复制到目标对象。
+- 它会返回目标对象。
+- 如果目标对象中有与源对象相同的属性,则该属性会被源对象中的属性所覆盖。
+
+```js
+// 简单对象合并
+const target = { a: 1, b: 2 };
+const source = { b: 3, c: 4 };
+const result = Object.assign(target, source);
+console.log(result); // { a: 1, b: 3, c: 4 }
+console.log(target); // { a: 1, b: 3, c: 4 }
+
+// 克隆对象
+const originalObj = { a: 1, b: { c: 2 } };
+const clonedObj = Object.assign({}, originalObj);
+console.log(clonedObj); // { a: 1, b: { c: 2 } }
+
+// 合并多个对象
+const obj1 = { a: 1 };
+const obj2 = { b: 2 };
+const obj3 = { c: 3 };
+const mergedObj = Object.assign({}, obj1, obj2, obj3);
+console.log(mergedObj); // { a: 1, b: 2, c: 3 }
+```
+
+`Object.assign()` 只复制属性值。假如源对象是一个对象的引用，它仅仅会复制其引用值。（引用值要改一起改）
+
+
+
+#### 可枚举属性
+
+- 大多数内置属性(比如 `Object.prototype` 上的属性)默认是不可枚举的
+- 使用字面量或 `Object.create()` 创建的对象的自定义属性,默认是可枚举的。
+- 可以使用 `Object.getOwnPropertyDescriptor()` 方法来查看属性的描述符,其中 `enumerable` 属性标识该属性是否可枚举。
+- 也可以使用 `for...in` 循环来遍历对象的可枚举属性。
+- 在使用 `Object.assign()`、`JSON.stringify()` 等方法时,只有可枚举属性才会被处理。
+- 在进行对象克隆或合并时,通常只需要复制可枚举属性,忽略不可枚举属性。
+
+
 
 
 

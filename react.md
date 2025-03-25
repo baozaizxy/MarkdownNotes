@@ -679,7 +679,7 @@ const memoizedValue = useMemo(() => {
 
 `useLayoutEffect` 可能会影响性能。尽可能使用 [`useEffect`](https://zh-hans.react.dev/reference/react/useEffect)。
 
-主要的区别在于它会在 DOM 更新后、屏幕绘制之前同步执行回调。换句话说，useLayoutEffect 在浏览器绘制之前，**同步**地执行它的副作用操作，而 useEffect 是在浏览器绘制之后异步执行的。
+主要的区别在于它会在 DOM 更新后、屏幕绘制之前同步执行回调。换句话说，**useLayoutEffect 在浏览器绘制之前，同步地执行它的副作用操作，而 useEffect 是在浏览器绘制之后异步执行的。**
 
 **避免闪烁或布局抖动**：如果某些副作用操作需要在屏幕绘制前完成，避免由于 useEffect 的异步执行导致的闪烁，可以选择 useLayoutEffect。
 
@@ -1230,8 +1230,6 @@ export default App;
 
 对 **原生 DOM 事件的封装**，它提供了**跨浏览器的兼容性**，并优化了**性能和事件管理**
 
-
-
 - **跨浏览器兼容性**：React 统一了不同浏览器的事件处理方式，避免了兼容性问题。
 - **提高性能**：React 使用**事件委托**，将事件**绑定在 document 或 root 上**，减少事件监听器的数量，提高性能，然后通过**事件冒泡**触发回调。
 - **可重用的事件池（Event Pooling）**：React **复用事件对象**，减少垃圾回收（GC）压力。
@@ -1314,6 +1312,18 @@ const withExample = (WrappedComponent) => {
 
 
 
+#### PureComponent  -  类式组件版useMemo
+
+`React.PureComponent` 与 `React.Component` 几乎完全相同，但 PureComponent 自动实现了 `shouldComponentUpdate()` 方法，通过浅比较 props 和 state 来决定是否需要重新渲染组件。
+
+**工作原理**
+
+1. **自动浅比较**：PureComponent 会对当前 props 和 state 与下一个 props 和 state 进行浅比较
+2. **避免不必要渲染**：如果比较结果显示没有变化，组件不会重新渲染
+3. **性能优化**：减少不必要的渲染可以提高应用性能
+
+
+
 #### 受控组件 vs 非受控组件
 
 **受控组件**
@@ -1349,36 +1359,10 @@ useEffect 传入空数组 `[]`
 
 
 
-#### React 18 的并发模式（Concurrent Rendering）
-
-传统 React 渲染流程是同步的，无法中断：
-
-```text
-渲染任务开始 → 任务执行完毕 → 用户交互
-```
-
-而并发模式允许：
-
-```text
-渲染任务开始 → 用户交互（高优先级）→ 暂停当前任务 → 执行高优先级任务 → 恢复之前任务
-```
-
-1. React 提供了 `useTransition` 和 `startTransition` API，明确区分“紧急更新”和“非紧急更新”。
-2. Automatic Batching，默认开启自动批处理，能够将多个状态更新合并到一次渲染中，大幅提升性能
-3. Suspense
-
-
-
 #### Redux
 
 - 服务端数据需要被缓存
 - 跨组件共享数据
-
-
-
-
-
-
 
 
 
@@ -1404,18 +1388,6 @@ npm run dev
 2. SSG: 在**构建时**预先生成 HTML，速度最快，适用于**博客、产品列表、SEO 友好页面**。
 3. Router
 4. SEO
-
-
-
-
-
-
-
-在 JavaScript 中，执行上下文和执行栈是什么
-
- 手撕：已知级联组件的下拉菜单列表结构，输入一个值，找出其对应的value值以及对应的所有父节点value
-
-
 
 
 
@@ -1445,7 +1417,7 @@ React 的响应式模型基于一个简单的原则：**UI = f(state)**。这意
 
 - 通过 `useState` 返回的更新函数触发更新
 - 没有显式的生命周期方法，而是通过 `useEffect` 等 Hooks 管理副作用
-- 状态存储在 React 内部的 Fiber 节点中 ???
+- 状态存储在 React 内部的 Fiber 节点中 
 
 **useState**
 
@@ -1459,11 +1431,46 @@ React 的响应式模型基于一个简单的原则：**UI = f(state)**。这意
 
 #### React 的调度与并发模式
 
+在 React 16 之前，React 使用的是被称为"栈协调器"(Stack Reconciler)的渲染架构。这种架构存在一个关键问题：**一旦开始渲染，就无法中断**，直到整个组件树渲染完成。这导致了几个严重问题：
+
+1. **长时间阻塞主线程**：复杂组件树渲染可能需要几十甚至几百毫秒
+2. **动画和用户输入卡顿**：主线程被阻塞，无法响应用户交互
+3. **无法优先处理紧急更新**：所有更新任务优先级相同
+
+##### Fiber 链表结构
+
+Fiber 节点通过三个属性形成一个树状链表结构：
+
+1. **child**：指向第一个子节点
+2. **sibling**：指向下一个兄弟节点
+3. **return**：指向父节点
+
 ##### Fiber 架构
 
 - **可中断的渲染**：将渲染工作分解成小单元，可以暂停和恢复
 - **优先级调度**：不同的更新可以有不同的优先级
 - **并发渲染**：React 可以同时准备多个版本的 UI 
+
+Fiber 架构引入了两个关键概念：
+
+1. **工作循环** (Work Loop)
+2. **双缓冲** (Double Buffering)
+
+
+
+##### 渲染阶段 
+
+1. **Render 阶段**（可中断）
+   - 计算状态变化
+   - 构建 "workInProgress" Fiber 树
+   - 执行 Diff 算法
+   - 不产生任何用户可见的变化
+2. **Commit 阶段**（不可中断）
+   - 将变更应用到 DOM
+   - 运行生命周期方法或 effect 函数
+   - 产生用户可见的变化
+
+
 
 **双缓冲技术（Double Buffering）**
 
@@ -1488,7 +1495,7 @@ workInProgressFiber.alternate === currentFiber;
 3. 完成后，将 workInProgress 树作为新的 current 树（称为"commit"）
 4. 原来的 current 树成为新的 workInProgress 树的基础
 
-这个过程称为"翻转"（flip），类似于双缓冲中的缓冲区交换。
+这个过程称为"翻转"（flip），类似于双缓冲中的缓冲区交换。 **一次性"翻转"缓冲区，用户看到完整的新状态**
 
 **多版本渲染的实际例子**：`useTransition` Hook
 
@@ -1523,15 +1530,29 @@ function App() {
 
 
 
-##### 渲染阶段 
+##### Fiber架构的实际应用
 
-1. **Render 阶段**（可中断）
-   - 计算状态变化
-   - 构建 Fiber 树
-   - 执行 Diff 算法
-2. **Commit 阶段**（不可中断）
-   - 将变更应用到 DOM
-   - 运行生命周期方法或 effect 函数
+**React 18 的并发模式（Concurrent Rendering）**
+
+useTransition
+
+useDeferredValue 延迟更新昂贵的渲染
+
+传统 React 渲染流程是同步的，无法中断：
+
+```text
+渲染任务开始 → 任务执行完毕 → 用户交互
+```
+
+而并发模式允许：
+
+```text
+渲染任务开始 → 用户交互（高优先级）→ 暂停当前任务 → 执行高优先级任务 → 恢复之前任务
+```
+
+1. React 提供了 `useTransition` 和 `startTransition` API，明确区分“紧急更新”和“非紧急更新”。
+2. Automatic Batching，默认开启自动批处理，能够将多个状态更新合并到一次渲染中，大幅提升性能
+3. Suspense - 允许组件"等待"某些操作完成，同时显示回退 UI，React LazyLoad
 
 
 
@@ -1565,7 +1586,7 @@ function handleClick() {
 
 
 
-#### React 中的不变性原则 ????
+#### React 中的不变性原则
 
 React 依赖不变性来检测变化：
 
@@ -1582,4 +1603,203 @@ const updateUser = () => {
 };
 
 ```
+
+
+
+#### React Hooks为什么不能使用条件语句
+
+React Hooks 在内部是通过一个**链表**结构来存储状态的：
+
+1. **每个组件实例**维护一个 Hooks 链表
+2. **每次渲染时**，React 按顺序遍历这个链表
+3. **每个 Hook 调用**对应链表中的一个节点
+
+正确的解决方案是 - 将条件逻辑移到 Hook 内部/拆分组件
+
+
+
+#### React的闭包陷阱
+
+每次 React 组件渲染时，就像是拍了一张新照片，照片中包含当时所有的 props 和 state。组件内的函数（比如事件处理函数、定时器回调、useEffect 中的函数）都能"看到"它们被创建时的那张"照片"。
+
+如果这些函数在未来某个时刻执行（比如点击后、定时器触发后、API 请求完成后），它们仍然引用的是旧"照片"中的值，而不是最新的值。
+
+React 中的闭包陷阱（Closure Trap）是指**函数组件中的事件处理函数或副作用捕获了旧的 props 或 state 值**，导致代码行为与预期不符的问题。
+
+解决方案：
+
+1. 避免访问过时的state   --->   使用**函数式更新**
+
+   ```react
+   setCount(prevCount => prevCount + 1);
+   ```
+
+2. 正确设置 useEffect 依赖项
+
+   不然空依赖数组意味着只在挂载时执行一次
+
+3. **useCallback/useMemo**：确保依赖数组包含所有在函数中使用的响应式值
+
+   ```jsx
+     // ✅ 正确：包含所有依赖项
+     const handleSubmit = useCallback(() => {
+       submitForm({ name, email });
+     }, [name, email]); // 当 name 或 email 变化时更新函数
+   ```
+
+   不然的话拿到的就是挂载时的快照
+
+4. **事件处理函数**：如果需要最新值，要么内联定义函数，要么使用 ref
+
+   ```jsx
+   function IntervalCounter() {
+     const [count, setCount] = useState(0);
+     const countRef = useRef(count);
+     
+     // 保持 ref 与 state 同步
+     useEffect(() => {
+       countRef.current = count;
+     }, [count]);
+     
+     useEffect(() => {
+       const intervalId = setInterval(() => {
+         // ✅ 正确：使用 ref 获取最新值
+         setCount(countRef.current + 1);
+       }, 1000);
+       
+       return () => clearInterval(intervalId);
+     }, []); // 只在挂载时设置一次定时器
+     
+     return <div>Count: {count}</div>;
+   }
+   ```
+
+**如果函数需要"看到"最新的状态，而不是创建时的状态，就需要特别注意闭包陷阱**。
+
+
+
+#### 前端框架编译策略与性能优化
+
+### 基本概念
+
+- **AOT (构建时编译)**: 在应用构建阶段完成编译
+
+  构建时编译(Ahead-Of-Time Compilation，简称AOT)是指**在应用程序部署到生产环境之前**，提前将代码编译成最终形式的过程。对于前端应用来说，这通常发生在开发者的机器上或CI/CD流程中，而不是在用户的浏览器中。
+
+- **JIT (即时编译)**: 在浏览器运行时进行编译
+
+### Vue
+
+- 使用模板语法，模板结构相对固定
+- 在编译时可以分析模板中的静态部分和动态部分
+- 通过 AOT 优化，减少运行时计算
+
+```vue
+<div>
+  <h1>欢迎, {{username}}</h1>
+  <p>今天是星期一</p>  <!-- 静态内容 -->
+</div>
+```
+
+Vue的AOT编译可以识别出`<p>今天是星期一</p>`是静态内容，在编译时就将其标记，运行时不需要重新评估这部分内容，只关注动态部分`{{username}}`。
+
+### React
+
+- 使用 JSX，灵活性高但难以进行静态分析
+- 无法充分利用 AOT 优化
+- 采用虚拟 DOM (vDOM) 进行优化
+- 依赖 memo 等缓存机制，需要开发者手动优化
+
+但是JSX本质上是JavaScript的语法扩展，这意味着JSX拥有**完整的编程能力**：可以直接在渲染逻辑中使用JavaScript的全部功能
+
+
+
+#### JSX的缺点与React的应对策略
+
+虽然JSX确实带来了AOT优化的困难，但React团队采取了其他策略来提高性能：
+
+##### 1. 虚拟DOM优化
+
+虽然不如AOT优化高效，但虚拟DOM提供了一种通用的优化方案，适用于动态性高的应用。
+
+##### 2. 调度系统与并发模式
+
+- **时间切片**：将渲染工作分割成小块，避免阻塞主线程
+- **优先级调度**：更重要的更新先执行
+- **并发渲染**：React 18引入的并发特性
+
+##### 3. 手动优化API
+
+- **React.memo**：组件级别的记忆化
+- **useMemo/useCallback**：值和函数的缓存
+- **shouldComponentUpdate**：手动控制更新
+
+##### 4. 编译优化的尝试
+
+React团队也在探索编译优化的可能性：
+
+- **React Forget**：自动记忆化编译器（实验阶段）
+- **React Server Components**：服务端渲染的零JS组件
+
+
+
+### 对比vue和React
+
+#### 数据处理方式：不可变数据 vs 可变数据
+
+**React**
+
+React 推崇使用不可变数据，这意味着：**数据修改方式**：不直接修改原始数据，而是创建数据的副本并进行修改
+
+就是说setState其实是在创建新对象
+
+- **优势**：
+  1. 简化变化检测（引用比较）
+  2. 提高可预测性
+  3. 便于实现撤销/重做功能
+- **劣势**：
+  1. 更新嵌套数据结构较繁琐
+  2. 可能产生更多垃圾回收
+
+**Vue**
+
+Vue 采用可变数据模型配合响应式系统：**数据修改方式**：直接修改数据，Vue 会自动检测变化并更新视图
+
+- **优势**：
+  1. 代码更简洁直观
+  2. 嵌套数据更新更方便
+  3. 学习曲线较平缓
+- **劣势**：
+  1. 变化追踪有一定开销
+  2. 可能导致不明确的数据流向
+
+
+
+#### 单向数据流 vs 双向绑定
+
+**React**
+
+React 坚持单向数据流原则：
+
+- **数据流向**：父组件通过 props 向下传递数据，子组件通过回调函数向上通信
+
+**Vue**
+
+Vue 提供 `v-model` 简化双向绑定：
+
+- **双向绑定**：数据变化自动更新视图，视图变化自动更新数据
+
+
+
+#### 理念
+
+**React**
+
+所有的功能都用尽可能少的hooks实现，本身更像是一个基础的JS库，很多都还依赖社区，比如路由、状态管理、构建工具这也为next.js提供了很多空间
+
+**Vue**
+
+渐进式框架，有什么解决不了的就官方新增一个api，生态很多都由官方提供了，大多数情况官方也都提供了完整的解决方案
+
+
 
