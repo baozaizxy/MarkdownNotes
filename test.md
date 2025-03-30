@@ -22,6 +22,8 @@ const sort = (arrObj,arr) => {
 
 
 
+
+
 ```js
 // 原始数组
 const arr = [{value: 'a'}, {value: 'b'}, {value: 'c'}, {value: 'd'}, {value: 'e'}];
@@ -40,9 +42,6 @@ const sortedArr = [...arr].sort((a, b) => {
   return orderMap[a.value] - orderMap[b.value];
 });
 
-
-const orderMap = {};
-order.forEach((value,index)=>{})
 
 console.log(sortedArr);
 

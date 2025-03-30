@@ -1805,3 +1805,91 @@ Vue 提供 `v-model` 简化双向绑定：
 
 
 
+#### React hooks实现原理
+
+**初始化阶段**
+
+当函数组件第一次渲染时，React 会**为组件创建一个 Fiber 节点**，并在执行组件函数时依次创建 Hook 对象
+
+**更新阶段**
+
+当组件重新渲染时，React 会**按照 Hook 的调用顺序遍历之前创建的 Hook 链表**
+
+**useState**
+
+`useState` 是最基础的 Hook，它在内部使用 `useReducer` 实现，当调用 `setState` 函数时，内部会触发 `dispatchAction`
+
+**useEffect**
+
+`useEffect` 的实现涉及到副作用的处理，它会在渲染后执行
+
+**useRef**
+
+`useRef` 是最简单的 Hook 之一，它只是创建一个带有 `current` 属性的对象
+
+##### 全局变量
+
+React 内部使用一些全局变量来跟踪 Hooks 的执行：
+
+```js
+// 当前正在渲染的 Fiber
+let currentlyRenderingFiber = null;
+
+// 当前工作中的 Hook
+let workInProgressHook = null;
+
+// 当前 Hook
+let currentHook = null;
+
+// 调度优先级
+let renderLanes = NoLanes;
+```
+
+
+
+React fiber的优先级
+
+1. 同步任务 (Sync)
+
+   - **紧急的 DOM 突变**：如 `flushSync` 调用
+   - **React 18 之前的传统事件处理**
+   - **React.startTransition 之外的所有 setState 调用**
+   - **生命周期方法**：如 `componentDidMount`、`componentDidUpdate`
+   - **受控输入元素的状态更新**：如表单提交
+   - **Error Boundary 的错误处理**
+
+2. 连续输入事件 (Continuous Input)
+
+   - **用户输入事件**：如按键、点击、滚动等
+   - **拖拽操作**
+   - **其他需要即时反馈的交互操作**
+
+3.  默认优先级 (Default)
+
+   - **普通的事件处理**：如定时器回调
+   - **异步操作后的更新**：如网络请求完成后的状态更新
+   - **大多数常规的 `setState` 调用**
+   - **非紧急的 UI 更新**
+
+4. 过渡更新 (Transition)
+
+   - **useTransition 钩子触发的更新**
+   - **startTransition API 包裹的更新**
+   - **UI 过渡效果**：如页面切换、标签切换
+   - **非紧急的大型渲染工作**：如列表渲染、图表更新
+
+5. 选择性 Hydration (Selective Hydration)
+
+6. 重试任务
+
+7. 空闲任务 - 预加载预渲染等
+
+   
+
+   
+
+   setinterval/写一个div dom/request animation 执行顺序
+
+   
+
+   
