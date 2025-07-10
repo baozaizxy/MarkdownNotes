@@ -687,7 +687,7 @@ const memoizedValue = useMemo(() => {
 
 ##### useTransition
 
-`useTransition` 是一个让你可以在后台渲染部分 UI 的 React Hook， 是一个让你可以在后台渲染部分 UI 的 React Hook。
+`useTransition` 是一个让你可以在后台渲染部分 UI 的 React Hook。
 
 ```react
 const [isPending, startTransition] = useTransition();
@@ -770,7 +770,7 @@ function ChildComponent() {
 
 **React Fiber** 是 React 16 中引入的一种新的协调算法（reconciliation algorithm），旨在提高 React 的性能和可扩展性。
 
-在旧版 React 中，协调（reconciliation）和渲染过程是同步执行的。**当应用需要进行大量更新时（需要耗费大量计算和渲染时间），React 会阻塞 UI，直到所有更新完成**，导致应用在长时间更新时会变得不响应。Fiber 解决了这个问题，通过异步执行更新操作来分解工作
+在旧版 React 中，协调（reconciliation）和渲染过程是同步执行的。**当应用需要进行大量更新时（需要耗费大量计算和渲染时间），React 会阻塞 UI，直到所有更新完成**，**导致应用在长时间更新时会变得不响应**。Fiber 解决了这个问题，通过异步执行更新操作来分解工作
 
 RequestIdeCallback messageChannel
 
@@ -799,7 +799,7 @@ React 的渲染过程通常遵循 **自顶向下的执行顺序**。这意味着
 React 的 **diff 算法**（也称为 **reconciliation 算法**）是 React 用来比较两个虚拟 DOM（Virtual DOM）树的差异，并最终更新实际 DOM 的核心算法。
 
 1. **虚拟 DOM 的存在**：React 使用虚拟 DOM 来提高性能，避免每次状态更新时直接操作真实 DOM。虚拟 DOM 是对实际 DOM 的轻量级副本。
-2. **最小化 DOM 更新**：每当组件的状态或属性发生变化时，React 会重新生成虚拟 DOM。然后，通过 diff 算法，React 会计算出新的虚拟 DOM 和旧的虚拟 DOM 之间的差异，并只更新需要更改的部分。这样做的好处是减少了对真实 DOM 的频繁操作，提高了性能。
+2. **最小化 DOM 更新**：**每当组件的状态或属性发生变化时，React 会重新生成虚拟 DOM。然后，通过 diff 算法，React 会计算出新的虚拟 DOM 和旧的虚拟 DOM 之间的差异，并只更新需要更改的部分。**这样做的好处是减少了对真实 DOM 的频繁操作，提高了性能。
 
 ##### 算法核心思想
 
@@ -1450,7 +1450,7 @@ Fiber 节点通过三个属性形成一个树状链表结构：
 ##### Fiber 架构
 
 - **可中断的渲染**：将渲染工作分解成小单元，可以暂停和恢复
-- **优先级调度**：不同的更新可以有不同的优先级
+- **优先级调度**：**不同的更新可以有不同的优先级**
 - **并发渲染**：React 可以同时准备多个版本的 UI 
 
 Fiber 架构引入了两个关键概念：
@@ -1893,3 +1893,62 @@ React fiber的优先级
    
 
    
+   
+   在没有fiber的时候，react的挂载和更新是基于深度优先遍历自顶向下，这个过程经过diff等等
+   
+   fiber的细小任务是可以打断可以回滚的
+   
+   基于requestIdeCallback - 获取浏览器的空闲时间
+   
+   React fiber用的message channel做了一个模拟 间隔时间大概5ms左右
+   
+   浏览器的主线程主要分为JS和渲染
+   
+   主线程**每16.6ms屏幕刷新（渲染）**把渲染任务拉出来执行一下
+   
+   ```markdown
+   开始一帧
+   ↓
+   1. 处理用户输入事件（最高优先级）
+   ↓
+   2. 执行 JS 主线程任务
+   ↓
+   3. 处理微任务队列
+   ↓
+   4. 如果还有时间，执行 RequestAnimationFrame
+   ↓
+   5. 最后进行渲染（如果需要的话）
+       - 样式计算
+       - 布局
+       - 绘制
+       - 合成 
+   ↓
+   6. 如果还有时间，处理 RequestIdleCallback
+   ```
+   
+   **script 脚本本身就是第一个宏任务**。
+   
+   1. 首先执行第一个宏任务，也就是 script 脚本（主线程代码）
+   2. 执行期间遇到的微任务会进入微任务队列
+   3. 当前宏任务（script）执行完后，立即执行所有微任务
+   4. 然后开始下一个宏任务
+
+
+
+不选择requestIdeCallback 而是messagechannel的原因
+
+1. 兼容性 前者的浏览器支持不够广泛
+2. 执行频率问题
+   - RequestIdleCallback 的执行频率太低，默认最小间隔是 50ms
+   - MessageChannel 可以实现更灵活的时间控制，默认是以 MessagePort.postMessage 触发的宏任务形式执行
+3. 不稳定性
+   - RequestIdleCallback 在后台标签页或节能模式下可能会被限制到 1秒才执行一次
+   - MessageChannel 的行为更加可预测
+
+
+
+
+
+
+
+因为 react-transition-group 默认依赖 findDOMNode，而 Next.js 的 app router（app 目录）是严格的 React 18 concurrent 模式，不再支持 findDOMNode。
